@@ -1,31 +1,46 @@
 otachecker-u
 ==========
+
 Otachecker written in pure C++ for any Operating System
 
 Usage
 -------
+
 *An internet connection is required to download the plist from Apple server*
+
 	./otachecker
+
 If you call it without any argument the result will be all the current OTA's Apple allow
+
 	./otachecker -d iPhone4,1 -v 6.1.3
+
 If you specify what device (-d) and what version will return the OTA URL where you can download it.
 
 How to compile
 -------
 The makefile it's only tested in Linux.
+
 You need first to install boost library:
+
 	apt-get install libboost-dev
 
-Then you can
+Then you can start compiling
+
+	mkdir obj
+
 	make
 
 
 Credits
 -------
 Developed by: ABeltramo 
+
 Based on [tihmstar](https://github.com/tihmstar) [Source](https://github.com/tihmstar/otachecker)
+
 Upon and idea of [GenHack](https://github.com/genhack)
+
 Using [PlistCpp](https://github.com/animetrics/PlistCpp) and [Boost](http://www.boost.org/)
+
 
 License
 -------
