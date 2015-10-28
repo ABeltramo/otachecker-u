@@ -36,6 +36,25 @@ using namespace std;
 string versionSearch = "";
 string deviceSearch = "";
 
+void findSignignOTA(map<string, boost::any>& dict, string device){
+	const map<string, boost::any>& dictionary = boost::any_cast<const map<string, boost::any>& >(dict.find(device)->second);//Get the device dictionary
+	const vector<boost::any>& firmwares = boost::any_cast<const vector<boost::any>& >(dictionary.find("firmwares")->second);//Get the firmwares vector
+	cout << "[ "<< device << " ] Signign firmware:" << endl;
+	for(vector<boost::any>::const_iterator it = firmwares.begin(); it != firmwares.end(); ++it){
+		map<string, boost::any> firmDict = boost::any_cast<const map<string, boost::any> >(*it); 			//Get the dict inside the vector
+		bool signing = boost::any_cast<bool>(firmDict["signing"]);
+		if(!signing)
+			continue;
+		try {
+			cout << boost::any_cast<double>(firmDict["version"]) << " ";						// Sometimes it's a double
+		}
+		catch (const std::exception& e){
+			cout << boost::any_cast<string>(firmDict["version"]) << " ";						// Sometimes it's a string
+		}
+	}
+	cout << endl;
+}
+
 void findOTA(map<string, boost::any>& dict){
 	const vector<boost::any>& plistArray = boost::any_cast<const vector<boost::any>& >(dict.find("Assets")->second); 	//Get the main vector from plist
 	for(vector<boost::any>::const_iterator it = plistArray.begin(); it != plistArray.end(); ++it){
@@ -105,19 +124,24 @@ size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	//Helper f
     return size*nmemb; 							//tell curl how many bytes we handled
 }
 
-int main(int argc, const char * argv[]){
-	cout << "Downloading latest plist from Apple.com" << endl;
+void downloadFile(const char * URL, const char * resultFile){
+	data = "";
 	CURL* curl;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, "http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml");
+	curl_easy_setopt(curl, CURLOPT_URL, URL);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
 	curl_easy_perform(curl);
 	//Saving to file
 	ofstream plist;
-  	plist.open ("mobileAssets.xml");
+  	plist.open (resultFile);
 	plist << data;
 	plist.close();
+}
+
+int main(int argc, const char * argv[]){
+	cout << " *Downloading latest plist from Apple.com*" << endl;
+	downloadFile("http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml", "mobileAssets.xml");
 	//Reading the plist
 	map<string, boost::any> dict; 
 	Plist::readPlist("mobileAssets.xml", dict);
@@ -138,7 +162,13 @@ int main(int argc, const char * argv[]){
 			}
 		}
 		findOTA(dict);
+		cout << " *Downloading signign firmware for " << deviceSearch << " from http://api.ineal.me*" << endl;
+		downloadFile(("http://api.ineal.me/tss/" + deviceSearch + "/plist").c_str(), "apiIneal.xml");
+		Plist::readPlist("apiIneal.xml", dict);
+		findSignignOTA(dict,deviceSearch);
+		remove("apiIneal.xml"); // Delete the file
 	}
-	cout << endl << "Developed by: ABeltramo - Based on tihmstar Source - Upon and idea of GenHack" << endl;
-	remove("mobileAssets.xml"); // Delete the file
+	remove("mobileAssets.xml"); // Delete the file	
+	cout << endl << "Developed by: ABeltramo - Based on tihmstar source - Upon an idea of GenHack" << endl;
+	
 }

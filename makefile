@@ -4,7 +4,7 @@ LD_FLAGS := -lcurl
 CC_FLAGS :=
 
 otachecker: $(OBJ_FILES)
-	g++ $(LD_FLAGS) main.cpp -o $@ $^
+	g++ $(LD_FLAGS) main.cpp -o build/$@ $^
 
 obj/%.o: PlistCpp/%.cpp main.cpp
 	g++ $(CC_FLAGS) -c -o $@ $<
