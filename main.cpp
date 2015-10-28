@@ -30,6 +30,7 @@
 #include <iterator>
 #include <algorithm>    // std::sort
 #include <curl/curl.h>
+#include <getopt.h>
 
 using namespace std;
 
@@ -76,6 +77,15 @@ void findOTA(map<string, boost::any>& dict){
 	cout << "Device: " << deviceSearch << endl << "Version: " << versionSearch << endl << "Not found." << endl;		//End of Plist, not found
 }
 
+
+string firstNumberstring(string const & str){				// Helper function: return the string before the first number
+  size_t const n = str.find_first_of("0123456789");
+  if (n != string::npos){
+    return str.substr(0, n-1);
+  }
+  return string();
+}
+
 void printOtas(map<string, boost::any>& dict){
 	map<string,vector<string> > results;
 	cout << "Apple currently signs following ota firmwares" << endl;
@@ -101,30 +111,28 @@ void printOtas(map<string, boost::any>& dict){
 		vector<string> curRis = it->second;
 		sort(curRis.begin(),curRis.end());									// Ordering the devices
 		cout << "[iOS " << it->first << " ]" << endl;
+		string prevDevice = curRis[0];										// Variable to decide when to print new line
 		for(vector<string>::iterator device = curRis.begin(); device != curRis.end(); ++device){
+			if(firstNumberstring(prevDevice) != firstNumberstring(*device)){				// Found a new device!
+				cout << endl;										// Print a new line
+			}
 			cout << *device << " ";
+			prevDevice = *device;										// Update the prevDevice
 		}		
 		cout << endl << endl;
 	}
 }
 
-bool cpequal(const char *a, const char *b, int length){			//Helper function for argc,argv
-	for(int i=0;i<length; i++)
-		if(a[i] != b[i])
-			return false;
-	return true;
-}
-
 string data; // Contain the download plist file
 
-size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	//Helper function needed to download content
+size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	// Helper function needed to download content
     for (int c = 0; c<size*nmemb; c++){
         data.push_back(buf[c]);
     }
-    return size*nmemb; 							//tell curl how many bytes we handled
+    return size*nmemb; 							// Tell curl how many bytes we handled
 }
 
-void downloadFile(const char * URL, const char * resultFile){
+void downloadFile(const char * URL, const char * resultFile){		// Take a URL and create a file with data inside
 	data = "";
 	CURL* curl;
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -139,36 +147,57 @@ void downloadFile(const char * URL, const char * resultFile){
 	plist.close();
 }
 
-int main(int argc, const char * argv[]){
-	cout << " *Downloading latest plist from Apple.com*" << endl;
-	downloadFile("http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml", "mobileAssets.xml");
-	//Reading the plist
-	map<string, boost::any> dict; 
-	Plist::readPlist("mobileAssets.xml", dict);
+void printHelp(){							// Just printing wich arguments it need
+	cout << "otachecker-u: [-d device] [-i version]" << endl;
+	cout << "default (no args): shows what ota firmware is signed for which devices" << endl;
+	cout << "	-h:	Show this help" << endl;
+	cout << "	-d:	Specify wich device you wan't to search" << endl;
+	cout << "	-v:	Specify the version of the firmware" << endl;
+	cout << endl;
+}
 
+int main(int argc, char **argv){
 	if (argc == 1) {
-            printOtas(dict);
-        }
-	else{
-		//Read the argument passed
-		for (int i = 1; i < argc; i++) {
-			if (cpequal(argv[i],"-d",2)){
-				deviceSearch = argv[i+1];
-				i++;
-			}
-			else if(cpequal(argv[i],"-v",2)){
-				versionSearch = argv[i+1];
-				i++;
-			}
+		cout << " *Downloading latest plist from Apple.com*" << endl;
+		downloadFile("http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml", "mobileAssets.xml");		
+		map<string, boost::any> dict; 
+		Plist::readPlist("mobileAssets.xml", dict);
+		printOtas(dict);
+	}
+
+	int c;
+	while ((c = getopt (argc, argv, "hd:v:")) != -1){ //Read the argument passed
+    		switch (c){
+			case 'h':
+            			printHelp();
+            		break;
+			case 'd':
+            			deviceSearch = optarg;
+            		break;
+			case 'v':
+            			versionSearch = optarg;
+            		break;
+			case '?':
+			default:
+				cout << "*Invalid argument passed.*" << endl;
+				printHelp();
+			break;
+				
 		}
+	}
+	if(deviceSearch != "" && versionSearch != ""){	// Arguments passed correctly
+		cout << " *Downloading latest plist from Apple.com*" << endl;
+		downloadFile("http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml", "mobileAssets.xml");
+		map<string, boost::any> dict; 				//Reading the plist
+		Plist::readPlist("mobileAssets.xml", dict);
 		findOTA(dict);
 		cout << " *Downloading signign firmware for " << deviceSearch << " from http://api.ineal.me*" << endl;
 		downloadFile(("http://api.ineal.me/tss/" + deviceSearch + "/plist").c_str(), "apiIneal.xml");
 		Plist::readPlist("apiIneal.xml", dict);
 		findSignignOTA(dict,deviceSearch);
-		remove("apiIneal.xml"); // Delete the file
+		remove("apiIneal.xml"); 		// Delete the file
 	}
-	remove("mobileAssets.xml"); // Delete the file	
-	cout << endl << "Developed by: ABeltramo - Based on tihmstar source - Upon an idea of GenHack" << endl;
+	remove("mobileAssets.xml"); 				// Delete the file	
+	cout << endl << "Developed by: ABeltramo - Based on tihmstar source - Upon an idea of GenHack" << endl << endl;
 	
 }
