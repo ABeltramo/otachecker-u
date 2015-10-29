@@ -113,9 +113,8 @@ void printOtas(map<string, boost::any>& dict){
 		cout << "[iOS " << it->first << " ]" << endl;
 		string prevDevice = curRis[0];										// Variable to decide when to print new line
 		for(vector<string>::iterator device = curRis.begin(); device != curRis.end(); ++device){
-			if(firstNumberstring(prevDevice) != firstNumberstring(*device)){				// Found a new device!
+			if(firstNumberstring(prevDevice) != firstNumberstring(*device))					// Found a new device!
 				cout << endl;										// Print a new line
-			}
 			cout << *device << " ";
 			prevDevice = *device;										// Update the prevDevice
 		}		
@@ -148,7 +147,7 @@ void downloadFile(const char * URL, const char * resultFile){		// Take a URL and
 }
 
 void printHelp(){							// Just printing wich arguments it need
-	cout << "otachecker-u: [-d device] [-i version]" << endl;
+	cout << "otachecker: [-d device] [-i version]" << endl;
 	cout << "default (no args): shows what ota firmware is signed for which devices" << endl;
 	cout << "	-h:	Show this help" << endl;
 	cout << "	-d:	Specify wich device you wan't to search" << endl;
