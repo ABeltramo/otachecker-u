@@ -27,6 +27,7 @@ If you call it without any argument the result will be all the current OTA's App
 	[...]
 	
 If you specify what device (-d) and what version (-v) the result will be the OTA URL where you can download it  
+	
 	bin/otachecker -d iPhone4,1 -v 6.1.3
 	
 	*Downloading latest plist from Apple.com*
@@ -55,11 +56,14 @@ Using:
 How to compile
 -------
 The makefile it's only tested in Linux.
-You need first to install boost and curl library:  
+You need first to install boost and curl library:
+
 	apt-get install libboost-dev libcurl-dev
 
-Then you can start compiling  
+Then you can start compiling
+
 	make
+
 An already compiled version is present in bin directory
 
 Credits
