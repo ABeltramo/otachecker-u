@@ -31,8 +31,43 @@
 #include <algorithm>    // std::sort
 #include <curl/curl.h>
 #include <getopt.h>
+#include <sstream>	// make url simple
 
 using namespace std;
+
+/***********************************
+ * CURL HELPERS
+ ***********************************/
+string data; // Contain the download result
+
+size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	// Helper function needed to download content
+    for (int c = 0; c<size*nmemb; c++){
+        data.push_back(buf[c]);
+    }
+    return size*nmemb; 							// Tell curl how many bytes we handled
+}
+
+string getRemote(const char *URL){
+	data = "";
+	CURL* curl;
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	curl_easy_setopt(curl, CURLOPT_URL, URL);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
+	curl_easy_perform(curl);
+	return data;
+}
+
+void downloadFile(const char * URL, const char * resultFile){		// Take a URL and create a file with data inside
+	getRemote(URL);
+	//Saving to file
+	ofstream plist;
+  	plist.open (resultFile);
+	plist << data;
+	plist.close();
+}
+
+/************************************/
 
 string versionSearch = "";
 string deviceSearch = "";
@@ -40,20 +75,27 @@ string deviceSearch = "";
 void findSignignOTA(map<string, boost::any>& dict, string device){
 	const map<string, boost::any>& dictionary = boost::any_cast<const map<string, boost::any>& >(dict.find(device)->second);//Get the device dictionary
 	const vector<boost::any>& firmwares = boost::any_cast<const vector<boost::any>& >(dictionary.find("firmwares")->second);//Get the firmwares vector
-	cout << "[ "<< device << " ] Signign firmware:" << endl;
+	cout << "[ "<< device << " ] Signign fw: " << endl;
 	for(vector<boost::any>::const_iterator it = firmwares.begin(); it != firmwares.end(); ++it){
 		map<string, boost::any> firmDict = boost::any_cast<const map<string, boost::any> >(*it); 			//Get the dict inside the vector
 		bool signing = boost::any_cast<bool>(firmDict["signing"]);
 		if(!signing)
 			continue;
 		try {
-			cout << boost::any_cast<double>(firmDict["version"]) << " ";						// Sometimes it's a double
+			double version = boost::any_cast<double>(firmDict["version"]);						// Sometimes it's a double
+			cout << version << endl;
+			std::ostringstream url;
+			url << "http://api.ipsw.me/v2.1/" << device << "/" << version << "/url";
+			cout << "IPSW URL: " << getRemote(url.str().c_str()) << endl;	
 		}
 		catch (const std::exception& e){
-			cout << boost::any_cast<string>(firmDict["version"]) << " ";						// Sometimes it's a string
+			string version = boost::any_cast<string>(firmDict["version"]);						// Sometimes it's a string
+			cout << version << endl;
+			std::ostringstream url;
+			url << "http://api.ipsw.me/v2.1/" << device << "/" << version << "/url";
+			cout << "IPSW URL: " << getRemote(url.str().c_str()) << endl;	
 		}
 	}
-	cout << endl;
 }
 
 void findOTA(map<string, boost::any>& dict){
@@ -122,36 +164,13 @@ void printOtas(map<string, boost::any>& dict){
 	}
 }
 
-string data; // Contain the download plist file
-
-size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	// Helper function needed to download content
-    for (int c = 0; c<size*nmemb; c++){
-        data.push_back(buf[c]);
-    }
-    return size*nmemb; 							// Tell curl how many bytes we handled
-}
-
-void downloadFile(const char * URL, const char * resultFile){		// Take a URL and create a file with data inside
-	data = "";
-	CURL* curl;
-	curl_global_init(CURL_GLOBAL_ALL);
-	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, URL);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
-	curl_easy_perform(curl);
-	//Saving to file
-	ofstream plist;
-  	plist.open (resultFile);
-	plist << data;
-	plist.close();
-}
-
 void printHelp(){							// Just printing wich arguments it need
-	cout << "otachecker: [-d device] [-i version]" << endl;
+	cout << "otachecker: [-d device] [-i version] [-s]" << endl;
 	cout << "default (no args): shows what ota firmware is signed for which devices" << endl;
 	cout << "	-h:	Show this help" << endl;
 	cout << "	-d:	Specify wich device you wan't to search" << endl;
 	cout << "	-v:	Specify the version of the firmware" << endl;
+	cout << "	-s:	Used with -d and -v to find the latest signign ipsw firmware and the relative download URL" << endl;
 	cout << endl;
 }
 
@@ -164,8 +183,9 @@ int main(int argc, char **argv){
 		printOtas(dict);
 	}
 
+	bool searchSigned = false;
 	int c;
-	while ((c = getopt (argc, argv, "hd:v:")) != -1){ //Read the argument passed
+	while ((c = getopt (argc, argv, "shd:v:")) != -1){ //Read the argument passed
     		switch (c){
 			case 'h':
             			printHelp();
@@ -176,25 +196,31 @@ int main(int argc, char **argv){
 			case 'v':
             			versionSearch = optarg;
             		break;
+			case 's':
+				searchSigned = true;
+			break;
 			case '?':
 			default:
 				cout << "*Invalid argument passed.*" << endl;
 				printHelp();
+				exit(1);
 			break;
 				
 		}
 	}
 	if(deviceSearch != "" && versionSearch != ""){	// Arguments passed correctly
-		cout << " *Downloading latest plist from Apple.com*" << endl;
+		cout << endl << " *Downloading latest plist from Apple.com*" << endl;
 		downloadFile("http://mesu.apple.com/assets/com_apple_MobileAsset_SoftwareUpdate/com_apple_MobileAsset_SoftwareUpdate.xml", "mobileAssets.xml");
 		map<string, boost::any> dict; 				//Reading the plist
 		Plist::readPlist("mobileAssets.xml", dict);
 		findOTA(dict);
-		cout << " *Downloading signign firmware for " << deviceSearch << " from http://api.ineal.me*" << endl;
-		downloadFile(("http://api.ineal.me/tss/" + deviceSearch + "/plist").c_str(), "apiIneal.xml");
-		Plist::readPlist("apiIneal.xml", dict);
-		findSignignOTA(dict,deviceSearch);
-		remove("apiIneal.xml"); 		// Delete the file
+		if(searchSigned){
+			cout << endl <<  " *Downloading signign firmware for " << deviceSearch << " from http://api.ineal.me*" << endl;
+			downloadFile(("http://api.ineal.me/tss/" + deviceSearch + "/plist").c_str(), "apiIneal.xml");
+			Plist::readPlist("apiIneal.xml", dict);
+			findSignignOTA(dict,deviceSearch);
+			remove("apiIneal.xml"); 		// Delete the file
+		}
 	}
 	remove("mobileAssets.xml"); 				// Delete the file	
 	cout << endl << "Developed by: ABeltramo - Based on tihmstar source - Upon an idea of GenHack" << endl << endl;
