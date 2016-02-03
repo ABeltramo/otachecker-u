@@ -2,5 +2,5 @@ language: cpp
 os: linux
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install -qq libboost-dev libcurl-dev
+- sudo apt-get install -qq libboost-dev curl-dev
 script: make && make test
