@@ -10,5 +10,7 @@ addons:
   apt:
     packages:
     - libboost-locale-dev
-    - libboost1.55-dev
+    - libboost-dev
+    - libboost-system-dev
+    - libboost-filesystem-dev
     - libcurl4-gnutls-dev
