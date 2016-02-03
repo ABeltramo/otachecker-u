@@ -3,5 +3,4 @@ os: linux
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq libboost-dev libcurl-dev
-install: true
 script: make && make test
