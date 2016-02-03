@@ -1,10 +1,14 @@
+sudo: false
 language: cpp
 compiler:
   - gcc
 os: linux
-before_install:
-- sudo apt-get update -qq
-- sudo apt-get install libboost-dev libboost-locale-dev libcurl4-gnutls-dev
 script: make
 notifications:
   email: false
+addons:
+  apt:
+    packages:
+    -libboost-locale-dev
+    -libboost-dev
+    -libcurl4-gnutls-dev
