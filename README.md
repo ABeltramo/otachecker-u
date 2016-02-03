@@ -1,7 +1,7 @@
 otachecker-u
 ==========
 
-[![Build Status](https://travis-ci.org/ABeltramo/otachecker-u.svg?branch=master)](https://travis-ci.org/ABeltramo/otachecker-u)
+[![Build Status](https://travis-ci.org/ABeltramo/otachecker-u.svg?branch=master)](https://travis-ci.org/ABeltramo/otachecker-u)  
 Otachecker written in pure C++ for any Operating System
 
 Usage
