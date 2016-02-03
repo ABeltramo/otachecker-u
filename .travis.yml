@@ -12,4 +12,5 @@ addons:
     - boost-latest
     packages:
     - libboost-dev
+    - libboost-locale-dev
     - libcurl4-gnutls-dev
