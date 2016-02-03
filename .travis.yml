@@ -11,6 +11,5 @@ addons:
     sources:
     - boost-latest
     packages:
-    - libboost-dev
-    - libboost-locale-dev
+    - libboost1.55-all-dev
     - libcurl4-gnutls-dev
