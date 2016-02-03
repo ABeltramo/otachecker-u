@@ -9,6 +9,6 @@ notifications:
 addons:
   apt:
     packages:
-    -libboost-locale-dev
-    -libboost-dev
-    -libcurl4-gnutls-dev
+    - libboost-locale-dev
+    - libboost-dev
+    - libcurl4-gnutls-dev
