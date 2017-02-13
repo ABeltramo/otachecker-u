@@ -1,4 +1,4 @@
-otachecker-u [![Build Status](https://travis-ci.org/ABeltramo/otachecker-u.svg?branch=master)](https://travis-ci.org/ABeltramo/otachecker-u)
+otachecker-u [![Build Status](https://travis-ci.org/ABeltramo/otachecker-u.svg?branch=master)](https://travis-ci.org/ABeltramo/otachecker-u) [![license: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 ==========
 
 Otachecker written in pure C++ for any Operating System
