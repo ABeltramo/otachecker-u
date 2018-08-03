@@ -50,11 +50,20 @@ size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up){	// Helper 
 string getRemote(const char *URL){
 	data = "";
 	CURL* curl;
-	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
+
+	struct curl_slist *list = NULL;
+	list = curl_slist_append(list, "Accept:application/x-plist");			// Needed for api.ipsw.me V4
+  	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+
 	curl_easy_setopt(curl, CURLOPT_URL, URL);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
+
 	curl_easy_perform(curl);
+ 
+    curl_easy_cleanup(curl);												// Cleanup
+    curl_slist_free_all(list);												// Free custom headers
+
 	return data;
 }
 
@@ -73,28 +82,19 @@ string versionSearch = "";
 string deviceSearch = "";
 
 void findSignignOTA(map<string, boost::any>& dict, string device){
-	const map<string, boost::any>& dictionary = boost::any_cast<const map<string, boost::any>& >(dict.find(device)->second);//Get the device dictionary
-	const vector<boost::any>& firmwares = boost::any_cast<const vector<boost::any>& >(dictionary.find("firmwares")->second);//Get the firmwares vector
+	const vector<boost::any>& firmwares = boost::any_cast<const vector<boost::any>& >(dict.find("Firmwares")->second);	//Get the Firmwares vector
 	cout << "[ "<< device << " ] Signign fw: " << endl;
 	for(vector<boost::any>::const_iterator it = firmwares.begin(); it != firmwares.end(); ++it){
 		map<string, boost::any> firmDict = boost::any_cast<const map<string, boost::any> >(*it); 			//Get the dict inside the vector
-		bool signing = boost::any_cast<bool>(firmDict["signing"]);
+		bool signing = boost::any_cast<bool>(firmDict["Signed"]);
+		
 		if(!signing)
 			continue;
-		try {
-			double version = boost::any_cast<double>(firmDict["version"]);						// Sometimes it's a double
-			cout << version << endl;
-			std::ostringstream url;
-			url << "http://api.ipsw.me/v2.1/" << device << "/" << version << "/url";
-			cout << "IPSW URL: " << getRemote(url.str().c_str()) << endl;	
-		}
-		catch (const std::exception& e){
-			string version = boost::any_cast<string>(firmDict["version"]);						// Sometimes it's a string
-			cout << version << endl;
-			std::ostringstream url;
-			url << "http://api.ipsw.me/v2.1/" << device << "/" << version << "/url";
-			cout << "IPSW URL: " << getRemote(url.str().c_str()) << endl;	
-		}
+		
+		string version = boost::any_cast<string>(firmDict["Version"]);						
+		cout << version << endl;
+		string url = boost::any_cast<string>(firmDict["URL"]);						
+		cout << "IPSW URL: " << url << endl;	
 	}
 }
 
@@ -165,7 +165,7 @@ void printOtas(map<string, boost::any>& dict){
 }
 
 void printHelp(){							// Just printing wich arguments it need
-	cout << "otachecker: [-d device] [-i version] [-s]" << endl;
+	cout << "otachecker: [-d device -v version [-s] ]" << endl;
 	cout << "default (no args): shows what ota firmware is signed for which devices" << endl;
 	cout << "	-h:	Show this help" << endl;
 	cout << "	-d:	Specify wich device you wan't to search" << endl;
@@ -215,11 +215,11 @@ int main(int argc, char **argv){
 		Plist::readPlist("mobileAssets.xml", dict);
 		findOTA(dict);
 		if(searchSigned){
-			cout << endl <<  " *Downloading signign firmware for " << deviceSearch << " from http://api.ineal.me*" << endl;
-			downloadFile(("http://api.ineal.me/tss/" + deviceSearch + "/plist").c_str(), "apiIneal.xml");
-			Plist::readPlist("apiIneal.xml", dict);
+			cout << endl <<  " *Downloading signign firmware for " << deviceSearch << " from http://api.ipsw.me*" << endl;
+			downloadFile(("https://api.ipsw.me/v4/device/" + deviceSearch + "?type=ipsw").c_str(), "apiIPSW.xml");
+			Plist::readPlist("apiIPSW.xml", dict);
 			findSignignOTA(dict,deviceSearch);
-			remove("apiIneal.xml"); 		// Delete the file
+			remove("apiIPSW.xml"); 		// Delete the file
 		}
 	}
 	remove("mobileAssets.xml"); 				// Delete the file	
