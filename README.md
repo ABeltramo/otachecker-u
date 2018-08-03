@@ -6,52 +6,24 @@ Otachecker written in pure C++ for any Operating System
 Usage
 -------
 
-*An internet connection is required to download the plist from Apple server*  
+*An internet connection is required to download the plist from Apple server*
+
+	otachecker [-d deviceName -v iOSVersion [-s] ]
+
 If you call it without any argument the result will be all the current OTA's Apple allow
 
-	bin/otachecker
-
-	[...]
-	[iOS 8.3 ]
-	AppleTV3,1 AppleTV3,2 
-
-	[iOS 8.4.1 ]
-	iPad2,1 iPad2,2 iPad2,3 iPad2,4 iPad2,5 iPad2,6 iPad2,7 iPad3,1 iPad3,2 iPad3,3 iPad3,4 iPad3,5 iPad3,6 
-	iPhone4,1 iPhone5,1 iPhone5,2 
-	iPod5,1 
-
-	[iOS 9.1 ]
-	iPad2,1 iPad2,2 iPad2,3 iPad2,4 iPad2,5 iPad2,6 iPad2,7 iPad3,1 iPad3,2 iPad3,3 iPad3,4 iPad3,5 iPad3,6 iPad4,1 iPad4,2 iPad4,3 iPad4,4 iPad4,5 iPad4,6 iPad4,7 iPad4,8 iPad4,9 iPad5,1 iPad5,2 iPad5,3 iPad5,4 iPad6,7 iPad6,8 
-	iPhone4,1 iPhone5,1 iPhone5,2 iPhone5,3 iPhone5,4 iPhone6,1 iPhone6,2 iPhone7,1 iPhone7,2 iPhone8,1 iPhone8,2 
-	iPod5,1 iPod7,1 
-	[...]
+[![asciicast](https://asciinema.org/a/OpSfatjP8qMyiY7BUq01xqkVR.png)](https://asciinema.org/a/OpSfatjP8qMyiY7BUq01xqkVR?speed=2)
 	
 If you specify what device (-d) and what version (-v) the result will be the OTA URL where you can download it  
-	
-	bin/otachecker -d iPhone4,1 -v 6.1.3
-	
-	*Downloading latest plist from Apple.com*
-	Device: iPhone4,1
-	Version: 6.1.3
-	OTA URL:http://appldnld.apple.com/iOS6.1/091-3360.20130311.BmfR4/com_apple_MobileAsset_SoftwareUpdate/82b056c7a9e455ad4f00d1b5169e5b56ab8c2cc7.zip
+
+[![asciicast](https://asciinema.org/a/df59N057v65JOj9BRZeJbxoYm.png)](https://asciinema.org/a/df59N057v65JOj9BRZeJbxoYm?speed=2)
 
 If you also add the -s argument the result will also include the latest signign firmware from Apple for the specified device and the URL where you can download the latest IPSW
 Using:  
 [api.ineal.me](http://api.ineal.me/)  
 [api.ipsw.me](http://api.ipsw.me/)
 
-	bin/otachecker -d iPhone4,1 -v 6.1.3 -s
-
-	 *Downloading latest plist from Apple.com*
-	Device: iPhone4,1
-	Version: 6.1.3
-	OTA URL:http://appldnld.apple.com/iOS6.1/091-3360.20130311.BmfR4/com_apple_MobileAsset_SoftwareUpdate/82b056c7a9e455ad4f00d1b5169e5b56ab8c2cc7.zip
-
-	 *Downloading signign firmware for iPhone4,1 from http://api.ineal.me*
-	[ iPhone4,1 ] Signign fw: 
-	9.1
-	IPSW URL: http://appldnld.apple.com/ios9.1/031-41357-20151021-866B88C4-73FC-11E5-91CE-6B7443DA716B/iPhone4,1_9.1_13B143_Restore.ipsw
-
+[![asciicast](https://asciinema.org/a/0OXqAaVXYo5tCrnLkaDhMNK7u.png)](https://asciinema.org/a/0OXqAaVXYo5tCrnLkaDhMNK7u?speed=2)
 
 How to compile
 -------
