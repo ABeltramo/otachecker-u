@@ -36,7 +36,7 @@ Then you can start compiling
 
 	make
 
-An already compiled version is present in bin directory
+You can also find already compiled version of otachecker in the [release](https://github.com/ABeltramo/otachecker-u/releases) tab
 
 Credits
 -------
