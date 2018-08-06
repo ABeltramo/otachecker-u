@@ -12,17 +12,17 @@ Usage
 
 If you call it without any argument the result will be all the current OTA's Apple allow
 
-[![asciicast](https://asciinema.org/a/vfM4buAjY4RMzqgC5KFq1HjJX.png)](https://asciinema.org/a/vfM4buAjY4RMzqgC5KFq1HjJX?speed=2&autoplay=1)
+![giphy](https://media.giphy.com/media/8FJ72F0ZwQI4spYOAg/giphy.gif)
 	
 If you specify what device (-d) and what version (-v) the result will be the OTA URL where you can download it  
 
-[![asciicast](https://asciinema.org/a/hRBECVylZ4h7miMN4bMMrB1k2.png)](https://asciinema.org/a/hRBECVylZ4h7miMN4bMMrB1k2?speed=2&autoplay=1)
+![giphy](https://media.giphy.com/media/3dpqyWFCL4jQQqIfc1/giphy.gif)
 
 If you also add the -s argument the result will also include the latest signign firmware from Apple for the specified device and the URL where you can download the latest IPSW
 Using:  
 [api.ipsw.me](https://ipswdownloads.docs.apiary.io/#)
 
-[![asciicast](https://asciinema.org/a/IeQMc8Clazc3gZtzSOkEtYNj6.png)](https://asciinema.org/a/IeQMc8Clazc3gZtzSOkEtYNj6?speed=2&autoplay=1)
+![giphy](https://media.giphy.com/media/w8YJDWVCNUKylnCicX/giphy.gif)
 
 How to compile
 -------
